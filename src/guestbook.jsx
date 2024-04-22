@@ -1,5 +1,5 @@
 import React from "react";
-import { useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import {
   Table,
   TableBody,
@@ -44,18 +44,57 @@ const fetchMessages = async () => {
   return response.json();
 };
 
+const postMessage = async (data) => {
+  const response = await fetch("https://slachthuis-be.vercel.app/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  return response.json();
+};
+
 export default function Guestbook({ open }) {
   const { data, isLoading, isError } = useQuery("messages", {
     queryFn: fetchMessages,
   });
-  console.log(data, "data", isLoading, "isLoading", isError, "isError");
+  const { mutate, isIdle, isSuccess } = useMutation(postMessage, {
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries("messages");
+    },
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const name = e.target[0].value;
+    const message = e.target[1].value;
+    mutate({ name, message });
+  };
 
   return (
-    <div className="w-full h-58">
+    <div className="w-screen h-58 mx-8">
       <GlobalStyles />
       <ThemeProvider theme={original}>
         <Window style={{ width: "100%", background: "transparent" }}>
           <WindowHeader>Gastenboek.exe</WindowHeader>
+          <WindowContent>
+            <form onSubmit={handleSubmit} className="flex flex-row">
+              <input type="text" placeholder="Name" className="h-12" />
+              <input type="text" className="h-12 ml-2" placeholder="Message" />
+              <button
+                type="submit"
+                className="mr-2 bg-green-600 p-2 ml-2 rounded-md border-2 border-black"
+              >
+                Verzend
+              </button>
+            </form>
+            {isSuccess && <div>Message sent!</div>}
+          </WindowContent>
           <WindowContent>
             <Table>
               <TableHead>
