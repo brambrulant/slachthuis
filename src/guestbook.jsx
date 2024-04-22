@@ -62,7 +62,12 @@ export default function Guestbook({ open }) {
   const { data, isLoading, isError } = useQuery("messages", {
     queryFn: fetchMessages,
   });
-  const { mutate, isIdle, isSuccess } = useMutation(postMessage, {
+  const {
+    mutate,
+    isIdle,
+    isSuccess,
+    isLoading: mutationLoading,
+  } = useMutation(postMessage, {
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries("messages");
