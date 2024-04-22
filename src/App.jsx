@@ -3,17 +3,24 @@ import { motion } from "framer-motion";
 import whatsapp_reminder from "./assets/whatsapp_reminder.png";
 import Boyan from "./assets/Boyan.png";
 import Jago from "./assets/Jago.png";
+import missed from "./assets/missed.png";
 import Chatbox from "./ChatBox.jsx";
 import Sun from "./assets/Sun.png";
 import Chris from "./assets/Chris.png";
 import { Dialog, DialogContent, DialogTrigger } from "./dialog.jsx";
 import Message from "./Message.jsx";
 import Menubar from "./Menubar.jsx";
+import { QueryClient, QueryClientProvider } from "react-query";
+import GuestbookIcon from "./assets/guestbook.png";
+import Guestbook from "./guestbook.jsx";
+
+const queryClient = new QueryClient();
 
 function App() {
   const constraintsRef = React.useRef(null);
   const [showMessageOpen, setShowMessageOpen] = React.useState(false);
   const [showChrisMessageOpen, setShowChrisMessageOpen] = React.useState(false);
+  const [guestBookOpen, setGuestBookOpen] = React.useState(false);
 
   const handleWhatsappReminderClick = () => {
     setShowMessageOpen(!showMessageOpen);
@@ -45,6 +52,19 @@ function App() {
   };
 
   const determineImage = (person) => {
+    if (person === "")
+      return (
+        <motion.img
+          src={missed}
+          alt="missed"
+          className="mb-24 w-64 z-50"
+          animate={{
+            scale: [1, 2, 2, 1, 1],
+            rotate: [0, 0, 270, 270, 0],
+            borderRadius: ["20%", "20%", "50%", "50%", "20%"],
+          }}
+        />
+      );
     if (person === "chris")
       return (
         <motion.img
@@ -64,7 +84,7 @@ function App() {
   };
 
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <motion.div
         className="w-screen h-screen z-[-10px] absolute bg-transparent"
         ref={constraintsRef}
@@ -94,6 +114,16 @@ function App() {
       </Dialog>
       <div className="w-screen h-screen bg-[url(./assets/Background.png)] bg-cover flex flex-col justify-between items-center">
         <Menubar handleOpenPerson={(person) => setPerson(person)} />
+        <button
+          className="z-50 absolute p-0 top-40 right-0 mr-0 cursor-pointer h-24 flex flex-col justify-start items-center "
+          onClick={() => setGuestBookOpen(!guestBookOpen)}
+        >
+          <img
+            src={GuestbookIcon}
+            alt="guestbook"
+            className="w-64 mt-24 h-64 mb-24 cursor-pointer m-0"
+          />
+        </button>
         <img
           src={whatsapp_reminder}
           alt="whatsapp reminder"
@@ -109,8 +139,13 @@ function App() {
             <Message person={person} />
           </DialogContent>
         </Dialog>
+        {guestBookOpen ? (
+          <div className="mb-4">
+            <Guestbook open={guestBookOpen} />
+          </div>
+        ) : null}
       </div>
-    </>
+    </QueryClientProvider>
   );
 }
 
